@@ -271,11 +271,12 @@
     <!-- Section du menu -->
     <div class="section">
         <label for="operation">Choisissez une opération :</label>
-        <select id="operation" onchange="generateProblem(this.value)">
+        <select id="operation">
             <option value="addition">Addition</option>
             <option value="soustraction">Soustraction</option>
             <option value="multiplication">Multiplication</option>
         </select>
+        <button onclick="generateProblem()">Générer un problème</button>
     </div>
 
     <!-- Section du problème -->
@@ -355,41 +356,33 @@
         }
 
         // Fonction pour générer un problème mathématique
-        function generateProblem(operation) {
-            let num1 = Math.floor(Math.random() * 10) + 1;
-            let num2 = Math.floor(Math.random() * 10) + 1;
-            let result;
-
-            if (operation === 'addition') {
-                result = num1 + num2;
-                document.getElementById("problem").innerHTML = num1 + " + " + num2;
-            } else if (operation === 'soustraction') {
-                result = num1 - num2;
-                document.getElementById("problem").innerHTML = num1 + " - " + num2;
-            } else if (operation === 'multiplication') {
-                result = num1 * num2;
-                document.getElementById("problem").innerHTML = num1 + " * " + num2;
-            }
-
-            document.getElementById("correctAnswer").value = result;
+        function generateProblem() {
+            let operation = document.getElementById("operation").value;
+            fetch(`/generate_problem?operation=${operation}`)
+                .then(response => response.json())
+                .then(data => {
+                document.getElementById("problem").innerHTML = data.probleme;
+                document.getElementById("correctAnswer").value = data.reponse; 
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         // Vérification de la réponse
         function checkAnswer() {
-            let userAnswer = document.getElementById("userAnswer").value;
-            let correctAnswer = document.getElementById("correctAnswer").value;
-
-            if (userAnswer == correctAnswer) {
+            let userAnswer = parseInt(document.getElementById("userAnswer").value.trim(), 10); 
+            let correctAnswer = parseInt(document.getElementById("correctAnswer").value.trim(), 10); 
+             if (userAnswer === correctAnswer) {
                 changeFace('happy');
                 score += 10;
             } else {
                 changeFace('sad');
                 score -= 5;
             }
+        
 
             document.getElementById("score").innerText = "Score : " + score;
             document.getElementById("userAnswer").value = "";
-            setTimeout(generateProblem, 2000, document.getElementById("operation").value);
+            generateProblem();
         }
 
         // Gestion des emojis
@@ -409,7 +402,7 @@
 
         // Générer un problème au chargement initial
         window.onload = function() {
-            generateProblem('addition');
+            generateProblem();
         };
     </script>
 </body>
